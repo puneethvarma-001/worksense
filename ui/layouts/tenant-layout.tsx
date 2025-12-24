@@ -1,11 +1,12 @@
 /**
  * Tenant Layout
- * Main layout for tenant application with navigation and theme support
+ * Main layout for tenant application with navigation and sidebar
  * Server component with client components for interactive elements
  */
 
 import React from 'react';
 import { TenantNavigation } from '@/ui/navigation/tenant-nav';
+import { SidebarNavigation } from '@/ui/navigation/sidebar-nav';
 
 interface TenantLayoutProps {
   children: React.ReactNode;
@@ -26,12 +27,9 @@ export function TenantLayout({ children, params }: TenantLayoutProps) {
 
       {/* Main Content */}
       <div className="flex flex-1">
-        {/* Sidebar */}
+        {/* Sidebar Navigation */}
         <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
-          {/* Sidebar content will be added here */}
-          <div className="flex-1 overflow-auto px-4 py-6">
-            {/* Navigation items */}
-          </div>
+          <SidebarNavigation tenant={params.tenant} />
         </aside>
 
         {/* Content Area */}
