@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { rootDomain } from '@/lib/utils';
+import { tenantMiddleware } from '@/middleware/tenant-middleware';
+import { rbacMiddleware } from '@/middleware/rbac-middleware';
 
 function extractSubdomain(request: NextRequest): string | null {
   const url = request.url;
@@ -44,7 +46,16 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const subdomain = extractSubdomain(request);
 
+  // Apply tenant middleware if subdomain detected
   if (subdomain) {
+    const tenantResult = await tenantMiddleware(request);
+
+    // If tenant resolution failed, but subdomain exists, continue anyway
+    // (allows admin and root domain routes)
+    if (tenantResult.response) {
+      return tenantResult.response;
+    }
+
     // Block access to admin page from subdomains
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/', request.url));
@@ -53,6 +64,12 @@ export async function middleware(request: NextRequest) {
     // For the root path on a subdomain, rewrite to the subdomain page
     if (pathname === '/') {
       return NextResponse.rewrite(new URL(`/s/${subdomain}`, request.url));
+    }
+
+    // Apply RBAC middleware for protected routes
+    const rbacResult = await rbacMiddleware(request);
+    if (!rbacResult.allowed && rbacResult.response) {
+      return rbacResult.response;
     }
   }
 
