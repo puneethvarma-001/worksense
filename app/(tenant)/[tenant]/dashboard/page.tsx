@@ -7,9 +7,10 @@ import { checkPermission } from '@/rbac/checkPermission';
 import { parseFlags, parseDemoRole } from '@/lib/tenantContext';
 import { Button } from '@/components/ui/button';
 
-export default async function TenantDashboardPage({ params }: { params: { tenant: string } }) {
+export default async function TenantDashboardPage({ params }: { params: Promise<{ tenant: string }> }) {
+  const { tenant } = await params;
   const hdrs = await headers();
-  const tenantId = hdrs.get('x-tenant-id') || params.tenant;
+  const tenantId = hdrs.get('x-tenant-id') || tenant;
 
   // Centralized parsing for flags and demo role
   const flags = parseFlags(hdrs.get('x-tenant-flags'));

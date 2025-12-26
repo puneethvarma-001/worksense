@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin']
-});
 
 export const metadata: Metadata = {
   title: 'Platforms Starter Kit',
@@ -20,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} antialiased`}>
+      <body className="antialiased">
         {/* Header moved to components/core/Header */}
         {children}
         <SpeedInsights />
