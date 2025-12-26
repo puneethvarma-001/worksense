@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { rootDomain } from '@/lib/utils';
+import { getTenantBySubdomain } from '@/lib/tenant';
 
-function extractSubdomain(request: NextRequest): string | null {
+export function extractSubdomain(request: NextRequest): string | null {
   const url = request.url;
   const host = request.headers.get('host') || '';
   const hostname = host.split(':')[0];
@@ -48,6 +49,25 @@ export async function middleware(request: NextRequest) {
     // Block access to admin page from subdomains
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    // Try to resolve tenant metadata and attach headers for downstream server components
+    try {
+      const tenant = await getTenantBySubdomain(subdomain);
+      // If tenant metadata is found, attach compact headers and either rewrite or continue
+      if (tenant) {
+        const res = pathname === '/' ? NextResponse.rewrite(new URL(`/s/${subdomain}`, request.url)) : NextResponse.next();
+        res.headers.set('x-tenant-id', tenant.id);
+        res.headers.set('x-tenant-subdomain', tenant.subdomain);
+        if (tenant.flags) {
+          // compact representation for middleware header
+          res.headers.set('x-tenant-flags', JSON.stringify(tenant.flags));
+        }
+        return res;
+      }
+    } catch (err) {
+      // Ignore tenant lookup errors and fall back to existing behavior
+      console.warn('tenant lookup failed', err);
     }
 
     // For the root path on a subdomain, rewrite to the subdomain page

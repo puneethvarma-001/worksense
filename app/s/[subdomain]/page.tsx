@@ -2,7 +2,9 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSubdomainData } from '@/lib/subdomains';
+import { getTenantBySubdomain } from '@/lib/tenant';
 import { protocol, rootDomain } from '@/lib/utils';
+import DashboardShell from '@/components/dashboard/DashboardShell';
 
 export async function generateMetadata({
   params
@@ -36,8 +38,15 @@ export default async function SubdomainPage({
     notFound();
   }
 
+  // Try to load richer tenant metadata (flags, name) and fall back to subdomain data
+  const tenantMeta = await getTenantBySubdomain(subdomain).catch(() => null);
+
+  const tenantName = tenantMeta?.name || subdomain;
+  const tenantFlags = tenantMeta?.flags;
+  const emoji = subdomainData?.emoji || '🏢';
+
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-blue-50 to-white p-4">
+    <div className="min-h-screen">
       <div className="absolute top-4 right-4">
         <Link
           href={`${protocol}://${rootDomain}`}
@@ -47,17 +56,8 @@ export default async function SubdomainPage({
         </Link>
       </div>
 
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-9xl mb-6">{subdomainData.emoji}</div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            Welcome to {subdomain}.{rootDomain}
-          </h1>
-          <p className="mt-3 text-lg text-gray-600">
-            This is your custom subdomain page
-          </p>
-        </div>
-      </div>
+      {/* Dashboard shell is a client component that handles interactivity */}
+      <DashboardShell tenant={tenantName} emoji={emoji} flags={tenantFlags} />
     </div>
   );
 }
