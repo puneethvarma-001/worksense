@@ -1,63 +1,38 @@
-import Link from 'next/link';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getSubdomainData } from '@/lib/subdomains';
-import { getTenantBySubdomain } from '@/lib/tenant';
-import { protocol, rootDomain } from '@/lib/utils';
-import DashboardShell from '@/components/dashboard/DashboardShell';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-export async function generateMetadata({
-  params
-}: {
-  params: Promise<{ subdomain: string }>;
-}): Promise<Metadata> {
-  const { subdomain } = await params;
-  const subdomainData = await getSubdomainData(subdomain);
-
-  if (!subdomainData) {
-    return {
-      title: rootDomain
-    };
-  }
-
-  return {
-    title: `${subdomain}.${rootDomain}`,
-    description: `Subdomain page for ${subdomain}.${rootDomain}`
-  };
-}
-
-export default async function SubdomainPage({
+export default async function Page({
   params
 }: {
   params: Promise<{ subdomain: string }>;
 }) {
   const { subdomain } = await params;
-  const subdomainData = await getSubdomainData(subdomain);
+  const demo = (await cookies()).get('demo_session')?.value;
 
-  if (!subdomainData) {
-    notFound();
+  if (!demo) {
+    redirect('/signin');
   }
 
-  // Try to load richer tenant metadata (flags, name) and fall back to subdomain data
-  const tenantMeta = await getTenantBySubdomain(subdomain).catch(() => null);
-
-  const tenantName = tenantMeta?.name || subdomain;
-  const tenantFlags = tenantMeta?.flags;
-  const emoji = subdomainData?.emoji || '🏢';
+  // if (demo) {
+  //   redirect(`/app`);
+  // }
 
   return (
-    <div className="min-h-screen">
-      <div className="absolute top-4 right-4">
-        <Link
-          href={`${protocol}://${rootDomain}`}
-          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          Welcome to {subdomain}
+        </h1>
+        <p className="text-gray-600 mb-8">
+          Access your dashboard and manage your organization.
+        </p>
+        <a
+          href="/app"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
         >
-          {rootDomain}
-        </Link>
+          Go to Dashboard
+        </a>
       </div>
-
-      {/* Dashboard shell is a client component that handles interactivity */}
-      <DashboardShell tenant={tenantName} emoji={emoji} flags={tenantFlags} />
     </div>
   );
 }

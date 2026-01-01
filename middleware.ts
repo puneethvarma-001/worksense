@@ -51,12 +51,27 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
+    // Define module paths that should be rewritten
+    const modulePaths = ['app', 'payroll', 'leave', 'attendance', 'onboarding-exits', 'org', 'policies', 'holidays', 'ai'];
+
+    // Check if pathname is a module path
+    const isModulePath = modulePaths.some(module => pathname === `/${module}`);
+
     // Try to resolve tenant metadata and attach headers for downstream server components
     try {
       const tenant = await getTenantBySubdomain(subdomain);
       // If tenant metadata is found, attach compact headers and either rewrite or continue
       if (tenant) {
-        const res = pathname === '/' ? NextResponse.rewrite(new URL(`/s/${subdomain}`, request.url)) : NextResponse.next();
+        let res: NextResponse;
+        if (pathname === '/') {
+          res = NextResponse.rewrite(new URL(`/s/${subdomain}`, request.url));
+        } else if (pathname === '/app') {
+          res = NextResponse.rewrite(new URL(`/s/${subdomain}/app`, request.url));
+        } else if (isModulePath) {
+          res = NextResponse.rewrite(new URL(`/s/${subdomain}/app${pathname}`, request.url));
+        } else {
+          res = NextResponse.next();
+        }
         res.headers.set('x-tenant-id', tenant.id);
         res.headers.set('x-tenant-subdomain', tenant.subdomain);
         if (tenant.flags) {
@@ -73,6 +88,16 @@ export async function middleware(request: NextRequest) {
     // For the root path on a subdomain, rewrite to the subdomain page
     if (pathname === '/') {
       return NextResponse.rewrite(new URL(`/s/${subdomain}`, request.url));
+    }
+
+    // For /app, rewrite to app
+    if (pathname === '/app') {
+      return NextResponse.rewrite(new URL(`/s/${subdomain}/app`, request.url));
+    }
+
+    // For module paths, rewrite to app
+    if (isModulePath) {
+      return NextResponse.rewrite(new URL(`/s/${subdomain}/app${pathname}`, request.url));
     }
   }
 

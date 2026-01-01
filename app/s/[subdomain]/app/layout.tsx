@@ -1,6 +1,7 @@
 import { headers, cookies } from 'next/headers';
 import { parseFlags, parseDemoRole } from '@/lib/tenantContext';
 import { AppShell } from '@/components/dashboard/AppShell';
+import { Metadata } from 'next';
 
 export default async function AppLayout({
   children,

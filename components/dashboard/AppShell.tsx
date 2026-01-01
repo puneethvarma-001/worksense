@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { checkPermission } from '@/rbac/checkPermission';
+import type { Permission } from '@/rbac/roles';
 import { 
   LayoutDashboard, 
   DollarSign, 
@@ -17,13 +19,18 @@ import {
   X,
   LogOut
 } from 'lucide-react';
+import { RoleSwitcher } from './RoleSwitcher';
+import { Sidebar } from './Sidebar';
 
 type NavItem = {
   key: string;
   label: string;
   href: string;
   icon: React.ReactNode;
-  permission?: string;
+  // optional required permission or permissions (any one will grant access)
+  permission?: Permission | Permission[];
+  // optional feature flag required (e.g. FEATURE_AI_RESUME)
+  feature?: string;
 };
 
 export function AppShell({
@@ -57,122 +64,93 @@ export function AppShell({
     { 
       key: 'dashboard', 
       label: 'Dashboard', 
-      href: `/s/${subdomain}/app`, 
+      href: '/app', 
       icon: <LayoutDashboard className="h-5 w-5" /> 
     },
     { 
       key: 'payroll', 
       label: 'Payroll', 
-      href: `/s/${subdomain}/app/payroll`, 
-      icon: <DollarSign className="h-5 w-5" /> 
+      href: '/payroll', 
+      icon: <DollarSign className="h-5 w-5" /> ,
+      permission: 'payroll.view'
     },
     { 
       key: 'leave', 
       label: 'Leave', 
-      href: `/s/${subdomain}/app/leave`, 
-      icon: <Calendar className="h-5 w-5" /> 
+      href: '/leave', 
+      icon: <Calendar className="h-5 w-5" /> ,
+      permission: ['leave.apply', 'leave.approve']
     },
     { 
       key: 'attendance', 
       label: 'Attendance', 
-      href: `/s/${subdomain}/app/attendance`, 
-      icon: <Clock className="h-5 w-5" /> 
+      href: '/attendance', 
+      icon: <Clock className="h-5 w-5" /> ,
+      permission: 'attendance.view'
     },
     { 
       key: 'onboarding', 
       label: 'Onboarding & Exits', 
-      href: `/s/${subdomain}/app/onboarding-exits`, 
-      icon: <UserPlus className="h-5 w-5" /> 
+      href: '/onboarding-exits', 
+      icon: <UserPlus className="h-5 w-5" /> ,
+      permission: ['onboarding.view', 'onboarding.manage']
     },
     { 
       key: 'org', 
       label: 'Organization', 
-      href: `/s/${subdomain}/app/org`, 
-      icon: <Building2 className="h-5 w-5" /> 
+      href: '/org', 
+      icon: <Building2 className="h-5 w-5" /> ,
+      permission: 'org.view'
     },
     { 
       key: 'policies', 
       label: 'Policies', 
-      href: `/s/${subdomain}/app/policies`, 
-      icon: <FileText className="h-5 w-5" /> 
+      href: '/policies', 
+      icon: <FileText className="h-5 w-5" /> ,
+      permission: 'policies.view'
     },
     { 
       key: 'holidays', 
       label: 'Holidays', 
-      href: `/s/${subdomain}/app/holidays`, 
-      icon: <CalendarDays className="h-5 w-5" /> 
+      href: '/holidays', 
+      icon: <CalendarDays className="h-5 w-5" /> ,
+      permission: 'holidays.view'
     },
     { 
       key: 'ai', 
       label: 'AI Tools', 
-      href: `/s/${subdomain}/app/ai`, 
-      icon: <Brain className="h-5 w-5" /> 
+      href: '/ai', 
+      icon: <Brain className="h-5 w-5" /> ,
+      permission: ['ai.resume_analyze', 'ai.call_screening'],
+      feature: 'FEATURE_AI_RESUME'
     }
   ];
 
+  const filteredNav = nav.filter((item) => {
+    // feature flag check
+    if (item.feature && !flags?.[item.feature]) return false;
+
+    // permission check: if no permission defined, show by default
+    if (!item.permission) return true;
+
+    if (Array.isArray(item.permission)) {
+      // allow if any of the permissions is present
+      return item.permission.some((p) => checkPermission([role], p));
+    }
+    return checkPermission([role], item.permission as Permission);
+  });
+
   return (
     <div className="min-h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <aside className={`
-        fixed md:sticky top-0 left-0 h-screen z-40 transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        w-64 bg-white border-r border-gray-200 flex flex-col
-      `}>
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-              {tenant[0]?.toUpperCase() || 'W'}
-            </div>
-            <div>
-              <div className="font-semibold text-gray-900">{tenant}</div>
-              <div className="text-xs text-gray-500">{role}</div>
-            </div>
-          </div>
-          {isMobile && (
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden">
-              <X className="h-5 w-5 text-gray-500" />
-            </button>
-          )}
-        </div>
-
-        <nav className="flex-1 overflow-y-auto p-4">
-          <ul className="space-y-1">
-            {nav.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.key}>
-                  <Link
-                    href={item.href}
-                    className={`
-                      flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
-                      ${isActive 
-                        ? 'bg-blue-50 text-blue-700' 
-                        : 'text-gray-700 hover:bg-gray-100'
-                      }
-                    `}
-                    onClick={() => isMobile && setSidebarOpen(false)}
-                  >
-                    <span className={isActive ? 'text-blue-600' : 'text-gray-500'}>
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="p-4 border-t border-gray-200">
-          <Link
-            href="/signin"
-            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            <LogOut className="h-5 w-5 text-gray-500" />
-            <span>Sign Out</span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar
+        tenant={tenant}
+        subdomain={subdomain}
+        role={role}
+        navItems={filteredNav}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isMobile={isMobile}
+      />
 
       {/* Mobile overlay */}
       {sidebarOpen && isMobile && (
@@ -202,6 +180,23 @@ export function AppShell({
               <div className="hidden sm:block text-sm text-gray-600">
                 {tenant}
               </div>
+
+              {/* Role switcher */}
+              <div className="hidden md:block">
+                <RoleSwitcher currentRole={role} subdomain={subdomain} />
+              </div>
+
+              {/* Logout button */}
+              <button
+                onClick={() => {
+                  document.cookie = 'demo_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                  window.location.href = '/signin';
+                }}
+                className="p-2 rounded-md hover:bg-gray-100"
+                title="Logout"
+              >
+                <LogOut className="h-5 w-5 text-gray-700" />
+              </button>
             </div>
           </div>
         </header>
