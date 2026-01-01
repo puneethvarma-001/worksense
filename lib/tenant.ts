@@ -1,10 +1,18 @@
 import { redis } from './redis';
 
+import { Role } from '@/rbac/roles';
+
+export type TenantUser = {
+  email: string;
+  role: Role;
+};
+
 export type TenantMetadata = {
   id: string;
   name: string;
   subdomain: string;
   flags?: Record<string, boolean>;
+  users?: TenantUser[];
   createdAt?: number;
 };
 
