@@ -1,22 +1,33 @@
 import React from 'react';
-import { Header } from '@/components/core/Header';
+import { Navbar } from '@/components/blocks/navbar';
+import { Footer } from '@/components/blocks/footer';
+import { Background } from '@/components/shared/background';
 import { MarketingHero } from '@/components/marketing/MarketingHero';
 import { FeaturesGrid } from '@/components/marketing/FeaturesGrid';
 import { RoleBasedSection } from '@/components/marketing/RoleBasedSection';
 import { CTASection } from '@/components/marketing/CTASection';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 
 export default async function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
-        <MarketingHero />
-        <FeaturesGrid />
-        <RoleBasedSection />
-        <CTASection />
+    <>
+      <Navbar />
+      <main>
+        <Background className="via-muted to-muted/80">
+          <div className="py-28 lg:py-32 lg:pt-44">
+            <MarketingHero />
+          </div>
+          <section id="features" className="pb-28 lg:pb-32">
+            <FeaturesGrid />
+          </section>
+          <section id="roles" className="pb-28 lg:pb-32">
+            <RoleBasedSection />
+          </section>
+        </Background>
+        <Background variant="bottom">
+          <CTASection />
+        </Background>
       </main>
-      <MarketingFooter />
-    </div>
+      <Footer />
+    </>
   );
 }
