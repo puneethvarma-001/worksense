@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { X, LogOut } from 'lucide-react';
+import { clearDemoSessionCookie, protocol, rootDomain } from '@/lib/utils';
 
 type NavItem = {
   key: string;
@@ -85,13 +86,17 @@ export function Sidebar({
       </nav>
 
       <div className="p-4 border-t border-gray-200">
-        <Link
-          href="/signin"
-          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+        <button
+          onClick={() => {
+            clearDemoSessionCookie();
+            if (isMobile) onClose();
+            window.location.href = `${protocol}://${rootDomain}/signin`;
+          }}
+          className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
         >
           <LogOut className="h-5 w-5 text-gray-500" />
           <span>Sign Out</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );

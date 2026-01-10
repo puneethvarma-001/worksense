@@ -25,6 +25,13 @@ import { parseFlags, parseDemoRole } from '../../lib/tenantContext';
   const role = parseDemoRole(demo);
   assert.strictEqual(role, 'Manager');
 
+  // demo role encoded (URI encoded) and with spaces (common cookie transform)
+  const encoded = encodeURIComponent(demo);
+  assert.strictEqual(parseDemoRole(encoded), 'Manager');
+
+  const spaced = demo.replace(/\+/g, ' ');
+  assert.strictEqual(parseDemoRole(spaced), 'Manager');
+
   const bad = parseDemoRole('not-base64');
   assert.strictEqual(bad, undefined);
 

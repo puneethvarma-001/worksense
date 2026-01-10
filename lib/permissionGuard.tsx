@@ -1,7 +1,7 @@
 import { cookies, headers } from 'next/headers';
 import { parseDemoRole } from './tenantContext';
-import { checkPermission, PermissionError } from '@/rbac/checkPermission';
-import type { Permission } from '@/rbac/roles';
+import { checkPermission, PermissionError } from '@/lib/rbac/checkPermission';
+import type { Permission } from '@/lib/rbac/roles';
 
 /**
  * Server-side helper to get the current demo role from cookies

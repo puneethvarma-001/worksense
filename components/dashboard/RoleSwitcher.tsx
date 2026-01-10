@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Role } from '@/rbac/roles';
+import { Role } from '@/lib/rbac/roles';
 
 const roles = [
   { value: Role.Employee, label: 'Employee' },
@@ -20,16 +20,19 @@ interface RoleSwitcherProps {
 export function RoleSwitcher({ currentRole, subdomain }: RoleSwitcherProps) {
   const router = useRouter();
 
-  const handleRoleChange = (newRole: string) => {
-    // Create a demo session cookie with the new role
-    const demoData = { role: newRole };
-    const encoded = typeof window !== 'undefined'
-      ? btoa(JSON.stringify(demoData))
-      : Buffer.from(JSON.stringify(demoData)).toString('base64');
-
-    // Set cookie and refresh the page
-    document.cookie = `demo_session=${encoded}; path=/; max-age=86400`;
-    router.refresh();
+  const handleRoleChange = async (newRole: string) => {
+    // Ask the server to update the demo_session cookie (HttpOnly), then refresh
+    try {
+      await fetch('/api/auth/demo-session', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
+      });
+    } catch (err) {
+      // best-effort; ignore network errors
+    } finally {
+      router.refresh();
+    }
   };
 
   return (

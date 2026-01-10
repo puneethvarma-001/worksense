@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { checkPermission } from '@/rbac/checkPermission';
-import type { Permission } from '@/rbac/roles';
+import { checkPermission } from '@/lib/rbac/checkPermission';
+import type { Permission } from '@/lib/rbac/roles';
 import { 
   LayoutDashboard, 
   DollarSign, 
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { RoleSwitcher } from './RoleSwitcher';
 import { Sidebar } from './Sidebar';
+import { clearDemoSessionCookie, protocol, rootDomain } from '@/lib/utils';
 
 type NavItem = {
   key: string;
@@ -189,8 +190,8 @@ export function AppShell({
               {/* Logout button */}
               <button
                 onClick={() => {
-                  document.cookie = 'demo_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-                  window.location.href = '/signin';
+                  clearDemoSessionCookie();
+                  window.location.href = `${protocol}://${rootDomain}/signin`;
                 }}
                 className="p-2 rounded-md hover:bg-gray-100"
                 title="Logout"

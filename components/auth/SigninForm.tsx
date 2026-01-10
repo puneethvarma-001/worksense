@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { protocol, rootDomain } from '@/lib/utils';
-import { Role } from '@/rbac/roles';
+import { Role } from '@/lib/rbac/roles';
 
 export function SigninForm() {
   const [subdomain, setSubdomain] = useState('');

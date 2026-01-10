@@ -1,22 +1,33 @@
 import React from 'react';
-import { Header } from '@/components/core/Header';
+import { Navbar } from '@/components/blocks/navbar';
+import { Footer } from '@/components/blocks/footer';
+import { Background } from '@/components/shared/background';
 import { MarketingHero } from '@/components/marketing/MarketingHero';
-import { FeaturesGrid } from '@/components/marketing/FeaturesGrid';
-import { RoleBasedSection } from '@/components/marketing/RoleBasedSection';
-import { CTASection } from '@/components/marketing/CTASection';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
+import { Logos } from '@/components/blocks/logos';
+import { Features } from '@/components/marketing/Features';
+import { ResourceAllocation } from '@/components/blocks/resource-allocation';
+import { Testimonials } from '@/components/blocks/testimonials';
+import { Pricing } from '@/components/blocks/pricing';
+import { FAQ } from '@/components/blocks/faq';
 
 export default async function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
-        <MarketingHero />
-        <FeaturesGrid />
-        <RoleBasedSection />
-        <CTASection />
+    <>
+      <Navbar />
+      <main>
+        <Background className="via-muted to-muted/80">
+            <MarketingHero />
+            <Logos />
+            <Features />
+            <ResourceAllocation />
+        </Background>
+        <Testimonials />
+        <Background variant="bottom">
+          <Pricing />
+          <FAQ />
+        </Background>
       </main>
-      <MarketingFooter />
-    </div>
+      <Footer />
+    </>
   );
 }
