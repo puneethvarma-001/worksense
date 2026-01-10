@@ -1,6 +1,6 @@
 import assert from 'assert';
-import { checkPermission } from '../../rbac/checkPermission';
-import { Role } from '../../rbac/roles';
+import { checkPermission } from '../../lib/rbac/checkPermission';
+import { Role } from '../../lib/rbac/roles';
 
 (async () => {
   // Test AMP role has all permissions

@@ -1,4 +1,4 @@
-import { enforcePermission } from '@/rbac/checkPermission';
+import { enforcePermission } from '@/lib/rbac/checkPermission';
 
 /**
  * Sample server action for applying for leave.

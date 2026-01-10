@@ -1,6 +1,6 @@
 import { redis } from './redis';
 
-import { Role } from '@/rbac/roles';
+import { Role } from '@/lib/rbac/roles';
 
 export type TenantUser = {
   email: string;

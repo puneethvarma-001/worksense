@@ -25,8 +25,19 @@ export function parseFlags(header?: string | null): TenantFlags {
 export function parseDemoRole(cookie?: string | null): string | undefined {
   if (!cookie) return undefined;
   try {
+    // Some user agents/proxies or cookie handling may URL-encode the value
+    // or replace '+' with spaces — normalize first.
+    let normalized = cookie;
+    try {
+      normalized = decodeURIComponent(normalized);
+    } catch (e) {
+      // ignore invalid decodeURIComponent
+    }
+    // Replace any whitespace (where '+' might have become ' ') back to '+' for base64
+    normalized = normalized.replace(/\s/g, '+');
+
     // cookie contains base64-encoded JSON like { role: 'Employee' }
-    const decoded = Buffer.from(cookie, 'base64').toString('utf-8');
+    const decoded = Buffer.from(normalized, 'base64').toString('utf-8');
     const parsed = JSON.parse(decoded);
     return parsed?.role ?? undefined;
   } catch (e) {

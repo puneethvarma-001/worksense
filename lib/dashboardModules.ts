@@ -1,4 +1,4 @@
-import { Role, Permission, rolePermissions } from '@/rbac/roles';
+import { Role, Permission, rolePermissions } from '@/lib/rbac/roles';
 
 export interface DashboardModule {
   key: string;

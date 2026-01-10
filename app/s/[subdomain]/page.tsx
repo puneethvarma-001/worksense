@@ -13,9 +13,9 @@ export default async function Page({
     redirect('/signin');
   }
 
-  // if (demo) {
-  //   redirect(`/app`);
-  // }
+  if (demo) {
+    redirect(`/app`);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">

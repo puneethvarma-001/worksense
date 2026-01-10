@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
 import { protocol, rootDomain } from '@/lib/utils';
-import { Role } from '@/rbac/roles';
+import { Role } from '@/lib/rbac/roles';
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({} as any));
